@@ -57,6 +57,103 @@ const db = {
   clear: (store) => dbRequest(store, 'readwrite', (s) => s.clear()),
 };
 
+/* ================= Язык системы ================= */
+
+const userLang = (navigator.language || navigator.userLanguage || 'ru').toLowerCase();
+const IS_RU = userLang.startsWith('ru');
+
+const T = {
+  ru: {
+    emptyTitle: 'Добавьте музыку',
+    emptyText: 'Выберите файлы из приложения «Файлы» — они сохранятся в медиатеке и будут играть без интернета.',
+    addMusic: 'Добавить музыку',
+    hint: 'MP3, M4A, WAV, FLAC. Файлы можно перекинуть на iPhone через AirDrop, Finder или сохранить из Telegram в «Файлы».',
+    sectionTitle: 'Песни',
+    statsEmpty: 'Пока пусто',
+    searchPlaceholder: 'Поиск',
+    noResults: 'Ничего не найдено',
+    noAudio: 'Среди файлов нет аудио',
+    addedOne: 'Песня добавлена',
+    addedMany: 'Добавлено: {n} {p}',
+    skipped: 'Пропущено файлов: {n}',
+    quota: 'В хранилище телефона не хватает места',
+    mediaError: 'Не удалось открыть медиатеку',
+    fileNotFound: 'Файл не найден в хранилище',
+    playbackError: 'Не удалось воспроизвести файл',
+    playbackStartError: 'Не удалось запустить воспроизведение',
+    removeConfirm: 'Удалить «{t}» из медиатеке?',
+    removed: 'Удалено из медиатеке',
+    removeError: 'Не удалось удалить песню',
+    shuffleOn: 'Перемешивание включено',
+    shuffleOff: 'Перемешивание выключено',
+    repeatOff: 'Повтор выключен',
+    repeatOne: 'Повтор одной песни',
+    repeatAll: 'Повтор всей медиатеке',
+    play: 'Играть',
+    pause: 'Пауза',
+    next: 'Следующая песня',
+    prev: 'Предыдущая песня',
+    shuffle: 'Перемешать',
+    repeat: 'Повтор',
+    closePlayer: 'Свернуть плеер',
+    artistLabel: 'Аудио',
+    noTitle: 'Без названия',
+    adding: 'Добавляем {i} из {n}',
+    ariaPlayTrack: 'Играть: {t}',
+    ariaRemoveTrack: 'Удалить: {t}',
+  },
+  en: {
+    emptyTitle: 'Add music',
+    emptyText: 'Choose files from the "Files" app — they will be saved to the library and play offline.',
+    addMusic: 'Add music',
+    hint: 'MP3, M4A, WAV, FLAC. Transfer files to iPhone via AirDrop, Finder, or save from Telegram to "Files".',
+    sectionTitle: 'Songs',
+    statsEmpty: 'Empty',
+    searchPlaceholder: 'Search',
+    noResults: 'Nothing found',
+    noAudio: 'No audio files found',
+    addedOne: 'Song added',
+    addedMany: 'Added: {n} {p}',
+    skipped: 'Skipped files: {n}',
+    quota: 'Not enough storage on device',
+    mediaError: 'Failed to open library',
+    fileNotFound: 'File not found in storage',
+    playbackError: 'Failed to play file',
+    playbackStartError: 'Failed to start playback',
+    removeConfirm: 'Delete "{t}" from library?',
+    removed: 'Removed from library',
+    removeError: 'Failed to delete song',
+    shuffleOn: 'Shuffle on',
+    shuffleOff: 'Shuffle off',
+    repeatOff: 'Repeat off',
+    repeatOne: 'Repeat one',
+    repeatAll: 'Repeat all',
+    play: 'Play',
+    pause: 'Pause',
+    next: 'Next',
+    prev: 'Previous',
+    shuffle: 'Shuffle',
+    repeat: 'Repeat',
+    closePlayer: 'Minimize player',
+    artistLabel: 'Audio',
+    noTitle: 'Untitled',
+    adding: 'Adding {i} of {n}',
+    ariaPlayTrack: 'Play: {t}',
+    ariaRemoveTrack: 'Delete: {t}',
+  }
+};
+
+function t(key, params) {
+  const dict = T[IS_RU ? 'ru' : 'en'];
+  let str = dict[key] || key;
+  if (params) {
+    Object.keys(params).forEach((k) => {
+      str = str.replace(new RegExp(`{${k}}`, 'g'), params[k]);
+    });
+  }
+  return str;
+}
+
 /* ================= Состояние ================= */
 
 const state = {
@@ -275,7 +372,7 @@ async function importFiles(fileList) {
   const skipped = all.length - files.length;
 
   if (!files.length) {
-    showToast('Среди файлов нет аудио');
+    showToast(t('noAudio'));
     return;
   }
 
@@ -319,15 +416,15 @@ async function importFiles(fileList) {
   await loadLibrary();
 
   if (quotaReached) {
-    showToast('В хранилище телефона не хватает места', 3600);
+    showToast(t('quota'), 3600);
   } else if (added > 0) {
-    showToast(added === 1 ? 'Песня добавлена' : `Добавлено: ${added} ${plural(added, 'песня', 'песни', 'песен')}`);
+    showToast(added === 1 ? t('addedOne') : t('addedMany', { n: added, p: plural(added, 'песня', 'песни', 'песен') }));
   } else {
-    showToast('Не удалось добавить файлы', 3000);
+    showToast(t('noAudio'), 3000);
   }
 
   if (skipped > 0) {
-    setTimeout(() => showToast(`Пропущено файлов: ${skipped}`), 2000);
+    setTimeout(() => showToast(t('skipped', { n: skipped })), 2000);
   }
 }
 
@@ -348,12 +445,13 @@ function filteredTracks() {
 
 function updateStats() {
   if (!state.tracks.length) {
-    stats.textContent = 'Пока пусто';
+    stats.textContent = t('statsEmpty');
     return;
   }
   const totalSize = state.tracks.reduce((sum, track) => sum + (track.size || 0), 0);
   const count = state.tracks.length;
-  stats.textContent = `${count} ${plural(count, 'песня', 'песни', 'песен')} · ${formatSize(totalSize)}`;
+  const label = IS_RU ? `${count} ${plural(count, 'песня', 'песни', 'песен')}` : `${count} ${count === 1 ? 'song' : 'songs'}`;
+  stats.textContent = `${label} · ${formatSize(totalSize)}`;
 }
 
 function createTrackRow(track) {
@@ -365,7 +463,7 @@ function createTrackRow(track) {
   const main = document.createElement('button');
   main.type = 'button';
   main.className = 'track-main';
-  main.setAttribute('aria-label', `Играть: ${track.title || track.name}`);
+  main.setAttribute('aria-label', t('ariaPlayTrack', { t: track.title || track.name }));
 
   const art = document.createElement('span');
   art.className = 'track-art';
@@ -377,11 +475,11 @@ function createTrackRow(track) {
 
   const title = document.createElement('span');
   title.className = 'track-title';
-  title.textContent = track.title || track.name || 'Без названия';
+  title.textContent = track.title || track.name || t('noTitle');
 
   const artist = document.createElement('span');
   artist.className = 'track-artist';
-  artist.textContent = track.artist || extensionOf(track.name) || 'Аудио';
+  artist.textContent = track.artist || extensionOf(track.name) || t('artistLabel');
 
   text.append(title, artist);
 
@@ -394,7 +492,7 @@ function createTrackRow(track) {
   const remove = document.createElement('button');
   remove.type = 'button';
   remove.className = 'track-del';
-  remove.setAttribute('aria-label', `Удалить: ${track.title || track.name}`);
+  remove.setAttribute('aria-label', t('ariaRemoveTrack', { t: track.title || track.name }));
   remove.innerHTML = MORE_ICON;
 
   item.append(main, remove);
@@ -426,7 +524,7 @@ async function loadLibrary() {
   } catch (error) {
     console.error('Не удалось прочитать медиатеку', error);
     state.tracks = [];
-    showToast('Не удалось открыть медиатеку');
+    showToast(t('mediaError'));
   }
 
   state.tracks.sort((a, b) => (a.addedAt || 0) - (b.addedAt || 0));
@@ -597,7 +695,7 @@ async function prepareTrack(id, { resetTime = false } = {}) {
   }
 
   if (!blob) {
-    showToast('Файл не найден в хранилище', 3000);
+    showToast(t('fileNotFound'), 3000);
     return false;
   }
 
@@ -635,6 +733,7 @@ async function playById(id, { autoplay = true, rebuildQueue = false } = {}) {
   } catch (error) {
     console.warn('Браузер не разрешил воспроизведение', error);
     setPlayingUI(false);
+    showToast(t('playbackStartError'));
   }
 }
 
@@ -708,7 +807,7 @@ function resetPlayback() {
 async function removeTrack(id) {
   const track = getTrack(id);
   if (!track) return;
-  const confirmed = window.confirm(`Удалить «${track.title || track.name}» из медиатеки?`);
+  const confirmed = window.confirm(t('removeConfirm', { t: track.title || track.name }));
   if (!confirmed) return;
 
   const wasCurrent = state.currentId === id;
@@ -718,7 +817,7 @@ async function removeTrack(id) {
     await db.remove(STORE_BLOBS, id);
   } catch (error) {
     console.error('Не удалось удалить песню', error);
-    showToast('Не удалось удалить песню');
+    showToast(t('removeError'));
     return;
   }
 
@@ -726,7 +825,7 @@ async function removeTrack(id) {
 
   state.queue = state.queue.filter((queued) => queued !== id);
   await loadLibrary();
-  showToast('Удалено из медиатеки');
+  showToast(t('removed'));
 }
 
 async function clearLibrary() {
@@ -768,7 +867,7 @@ function toggleShuffle() {
   localStorage.setItem(SHUFFLE_KEY, state.shuffle ? '1' : '0');
   updateModeButtons();
   if (state.currentId) toggleShuffleQueue();
-  showToast(state.shuffle ? 'Перемешивание включено' : 'Перемешивание выключено');
+  showToast(state.shuffle ? t('shuffleOn') : t('shuffleOff'));
 }
 
 function cycleRepeat() {
@@ -777,10 +876,10 @@ function cycleRepeat() {
   updateModeButtons();
   showToast(
     state.repeat === 'off'
-      ? 'Повтор выключен'
+      ? t('repeatOff')
       : state.repeat === 'one'
-        ? 'Повтор одной песни'
-        : 'Повтор всей медиатеки',
+        ? t('repeatOne')
+        : t('repeatAll'),
   );
 }
 
@@ -880,7 +979,6 @@ function bindEvents() {
   npShuffle.addEventListener('click', toggleShuffle);
   npRepeat.addEventListener('click', cycleRepeat);
   npClose.addEventListener('click', closeNowPlaying);
-  clearBtn.addEventListener('click', clearLibrary);
 
   miniPlayer.addEventListener('click', (event) => {
     if (event.target.closest('button')) return;
@@ -912,7 +1010,7 @@ function bindEvents() {
   audio.addEventListener('loadedmetadata', onLoadedMetadata);
   audio.addEventListener('timeupdate', onTimeUpdate);
   audio.addEventListener('error', () => {
-    if (audio.src) showToast('Не удалось воспроизвести файл', 3000);
+    if (audio.src) showToast(t('playbackError'), 3000);
   });
 
   window.addEventListener('dragover', (event) => event.preventDefault());
@@ -941,6 +1039,44 @@ function bindEvents() {
         .catch((error) => console.error('Не удалось зарегистрировать service worker', error));
     });
   }
+
+  /* ---------- Свайп влево для удаления трека ---------- */
+
+  let touchStartX = 0;
+  let touchCurrentX = 0;
+  let swipeTrackItem = null;
+
+  list.addEventListener('touchstart', (event) => {
+    const item = event.target.closest('.track');
+    if (!item) return;
+    swipeTrackItem = item;
+    touchStartX = event.changedTouches[0].screenX;
+    swipeTrackItem.style.transition = 'none';
+    swipeTrackItem.style.transform = 'translateX(0)';
+  }, { passive: true });
+
+  list.addEventListener('touchmove', (event) => {
+    if (!swipeTrackItem) return;
+    touchCurrentX = event.changedTouches[0].screenX;
+    const delta = touchCurrentX - touchStartX;
+    if (delta < 0) {
+      swipeTrackItem.style.transform = `translateX(${delta}px)`;
+      swipeTrackItem.style.background = 'rgba(250, 45, 72, 0.08)';
+    }
+  }, { passive: true });
+
+  list.addEventListener('touchend', () => {
+    if (!swipeTrackItem) return;
+    const delta = touchCurrentX - touchStartX;
+    swipeTrackItem.style.transition = 'transform 0.2s ease, background 0.2s ease';
+    swipeTrackItem.style.transform = 'translateX(0)';
+    swipeTrackItem.style.background = '';
+    if (delta < -70) {
+      const id = swipeTrackItem.dataset.id;
+      if (id) removeTrack(id);
+    }
+    swipeTrackItem = null;
+  });
 }
 
 /* ================= Запуск ================= */

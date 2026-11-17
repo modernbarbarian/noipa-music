@@ -1,7 +1,7 @@
 /* Кэш оболочки приложения. Музыка хранится отдельно — в IndexedDB,
    поэтому service worker её не кэширует.
    После изменения файлов поднимите версию, иначе iPhone покажет старую. */
-const CACHE = 'music-player-v11';
+const CACHE = 'music-player-v12';
 
 const ASSETS = [
   './',

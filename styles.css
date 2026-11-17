@@ -220,7 +220,7 @@ h1 {
   color: var(--text);
   background: var(--field-bg);
   border: 0;
-  border-radius: 10px;
+  border-radius: 16px;
   outline: none;
   -webkit-appearance: none;
   appearance: none;
@@ -312,6 +312,7 @@ body.has-player .content {
   align-items: center;
   min-height: 64px;
   padding-left: 16px;
+  transition: transform 0.2s ease, background 0.2s ease;
 }
 
 .track::after {
@@ -431,7 +432,7 @@ body.has-player .content {
   z-index: 20;
   background: var(--mini-bg);
   border: 0.5px solid var(--mini-border);
-  border-radius: 14px;
+  border-radius: 20px;
   box-shadow: var(--mini-shadow);
   backdrop-filter: blur(30px) saturate(1.6);
   -webkit-backdrop-filter: blur(30px) saturate(1.6);
@@ -873,6 +874,20 @@ body.has-player .toast { bottom: calc(100px + var(--safe-bottom)); }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 [hidden] { display: none !important; }
+
+/* ---------- Эффект нажатия на кнопки ---------- */
+
+button:active,
+.mini-btn:active,
+.np-ctrl:active,
+.np-close:active,
+.track-del:active,
+.add-btn:active,
+.primary-btn:active,
+.link-btn:active {
+  transform: scale(0.95);
+  transition: transform 0.1s ease;
+}
 
 /* ---------- Широкий экран ---------- */
 
