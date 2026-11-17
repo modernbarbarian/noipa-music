@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Медиатека</title>
+  <meta name="description" content="Локальный музыкальный плеер: музыка хранится в телефоне и играет без интернета.">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+
+  <link rel="manifest" href="./manifest.webmanifest">
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Медиатека">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="./icons/icon-180.png">
+  <link rel="icon" href="./icons/icon-192.png">
+
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-row">
+      <div class="titles">
+        <h1>Медиатека</h1>
+        <p class="stats" id="stats">Пока пусто</p>
+      </div>
+      <button class="add-btn" id="addBtn" type="button" aria-label="Добавить музыку">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="search-wrap" id="searchWrap" hidden>
+      <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+        <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/>
+        <path d="M16 16l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <input id="search" type="search" placeholder="Поиск" autocomplete="off" spellcheck="false">
+    </div>
+  </header>
+
+  <main class="content">
+    <h2 class="section-title" id="sectionTitle" hidden>Песни</h2>
+
+    <section class="empty" id="empty">
+      <div class="empty-icon" aria-hidden="true">
+        <svg viewBox="0 0 96 96" width="92" height="92">
+          <defs>
+            <linearGradient id="empty-grad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#fb5c74"/>
+              <stop offset="1" stop-color="#fa233b"/>
+            </linearGradient>
+          </defs>
+          <circle cx="48" cy="48" r="46" fill="url(#empty-grad)" opacity="0.16"/>
+          <g fill="url(#empty-grad)">
+            <ellipse cx="38" cy="62" rx="10" ry="7.5" transform="rotate(-18 38 62)"/>
+            <rect x="45.5" y="26" width="4.5" height="38" rx="2.25"/>
+            <path d="M50 26c11 3 15 11 13.5 22-2.5-8-7.5-12-13.5-14z"/>
+          </g>
+        </svg>
+      </div>
+      <h2>Добавьте музыку</h2>
+      <p class="empty-text">Выберите файлы из приложения «Файлы» — они сохранятся в медиатеке и будут играть без интернета.</p>
+      <button class="primary-btn" id="addBtn2" type="button">Добавить музыку</button>
+      <p class="hint">MP3, M4A, WAV, FLAC. Файлы можно перекинуть на iPhone через AirDrop, Finder или сохранить из Telegram в «Файлы».</p>
+    </section>
+
+    <ul class="list" id="list" aria-label="Песни"></ul>
+
+    <p class="no-results" id="noResults" hidden>Ничего не найдено</p>
+
+    <div class="clear-wrap" id="clearWrap" hidden>
+      <button class="link-btn" id="clearBtn" type="button">Очистить медиатеку</button>
+    </div>
+  </main>
+
+  <section class="mini-player" id="player" hidden aria-label="Плеер">
+    <div class="mini-main">
+      <div class="mini-art" id="miniArt" aria-hidden="true"></div>
+      <div class="mini-meta">
+        <div class="mini-title" id="pTitle">—</div>
+        <div class="mini-artist" id="pArtist"></div>
+      </div>
+      <button class="mini-btn" id="playBtn" type="button" aria-label="Играть">
+        <svg class="icon-play" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" fill="currentColor">
+          <path d="M8 5.6a1.2 1.2 0 0 1 1.8-1l9.1 6.4a1.2 1.2 0 0 1 0 2l-9.1 6.4a1.2 1.2 0 0 1-1.8-1z"/>
+        </svg>
+        <svg class="icon-pause" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" fill="currentColor">
+          <rect x="7" y="5" width="3.6" height="14" rx="1.5"/>
+          <rect x="13.4" y="5" width="3.6" height="14" rx="1.5"/>
+        </svg>
+      </button>
+      <button class="mini-btn" id="nextBtn" type="button" aria-label="Следующая песня">
+        <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="currentColor">
+          <path d="M17 5.5a1 1 0 0 0-2 0v5L6.9 5.6A1 1 0 0 0 5.4 6v12a1 1 0 0 0 1.5.9L15 14v4.5a1 1 0 0 0 2 0z"/>
+        </svg>
+      </button>
+    </div>
+    <div class="mini-progress" aria-hidden="true"><span id="miniProgress"></span></div>
+  </section>
+
+  <section class="now-playing" id="nowPlaying" hidden aria-label="Сейчас играет">
+    <div class="np-bg" id="npBg" aria-hidden="true"></div>
+    <div class="np-scrim" aria-hidden="true"></div>
+
+    <div class="np-top">
+      <button class="np-close" id="npClose" type="button" aria-label="Свернуть плеер">
+        <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 9l7 7 7-7"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="np-art-wrap">
+      <div class="np-art" id="npArt" aria-hidden="true"></div>
+    </div>
+
+    <div class="np-info">
+      <h2 class="np-title" id="npTitle">—</h2>
+      <p class="np-artist" id="npArtist"></p>
+    </div>
+
+    <div class="np-progress">
+      <input id="npSeek" class="np-seek" type="range" min="0" max="1000" step="1" value="0" aria-label="Перемотка">
+      <div class="np-times">
+        <span id="npCur">0:00</span>
+        <span id="npRemain">-0:00</span>
+      </div>
+    </div>
+
+    <div class="np-controls">
+      <button class="np-ctrl" id="npShuffle" type="button" aria-label="Перемешать" aria-pressed="false">
+        <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 7h3.5c3.5 0 5 10 8.5 10H21"/>
+          <path d="M3 17h3.5c1.6 0 2.8-2 3.9-4.1"/>
+          <path d="M17 4l4 3-4 3"/>
+          <path d="M17 14l4 3-4 3"/>
+        </svg>
+      </button>
+
+      <button class="np-ctrl" id="npPrev" type="button" aria-label="Предыдущая песня">
+        <svg viewBox="0 0 24 24" width="32" height="32" aria-hidden="true" fill="currentColor">
+          <path d="M7 5.5a1 1 0 0 1 2 0v5l8.1-4.9A1 1 0 0 1 18.6 6v12a1 1 0 0 1-1.5.9L9 14v4.5a1 1 0 0 1-2 0z"/>
+        </svg>
+      </button>
+
+      <button class="np-play" id="npPlay" type="button" aria-label="Играть">
+        <svg class="icon-play" viewBox="0 0 24 24" width="62" height="62" aria-hidden="true" fill="currentColor">
+          <path d="M8 5.6a1.2 1.2 0 0 1 1.8-1l9.1 6.4a1.2 1.2 0 0 1 0 2l-9.1 6.4a1.2 1.2 0 0 1-1.8-1z"/>
+        </svg>
+        <svg class="icon-pause" viewBox="0 0 24 24" width="62" height="62" aria-hidden="true" fill="currentColor">
+          <rect x="7" y="5" width="3.6" height="14" rx="1.5"/>
+          <rect x="13.4" y="5" width="3.6" height="14" rx="1.5"/>
+        </svg>
+      </button>
+
+      <button class="np-ctrl" id="npNext" type="button" aria-label="Следующая песня">
+        <svg viewBox="0 0 24 24" width="32" height="32" aria-hidden="true" fill="currentColor">
+          <path d="M17 5.5a1 1 0 0 0-2 0v5L6.9 5.6A1 1 0 0 0 5.4 6v12a1 1 0 0 0 1.5.9L15 14v4.5a1 1 0 0 0 2 0z"/>
+        </svg>
+      </button>
+
+      <button class="np-ctrl" id="npRepeat" type="button" aria-label="Повтор" aria-pressed="false">
+        <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 2.5l3 3-3 3"/>
+          <path d="M20 5.5H7a3 3 0 0 0-3 3v1"/>
+          <path d="M7 21.5l-3-3 3-3"/>
+          <path d="M4 18.5h13a3 3 0 0 0 3-3v-1"/>
+        </svg>
+        <span class="repeat-one" aria-hidden="true">1</span>
+      </button>
+    </div>
+  </section>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <section id="splash" class="splash">
+    <div class="splash-wrap" aria-hidden="true">
+      <h1 class="splash-title">NOIPA Music</h1>
+      <p class="splash-sub">No Jailbreak, No Alt, No Ad</p>
+      <p class="splash-tag">Just Music</p>
+    </div>
+  </section>
+
+  <div class="progress" id="progress" hidden>
+    <span class="spinner" aria-hidden="true"></span>
+    <span id="progressText">Добавляем…</span>
+  </div>
+
+  <input id="fileInput" type="file" multiple hidden
+         accept="audio/*,.mp3,.m4a,.aac,.wav,.flac,.ogg,.opus,.aiff,.aif,.caf,.m4b">
+  <audio id="audio" preload="metadata"></audio>
+
+  <script src="./app.js" defer></script>
+</body>
+</html>
