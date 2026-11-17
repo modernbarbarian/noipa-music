@@ -51,7 +51,7 @@ python3 -m http.server 8090
 ```
 
 Открыть `http://localhost:8090` на Mac. Service worker работает только на
-`localhost` или `https://`, поэтому по `http://192.168.x.x` офлайн-режим не проверить.
+`localhost` или `https://`, поэтому по `http://192.168.x.x` офлайн-режим не проверить. Либо https://modernbarbarian.github.io/noipa-music/
 
 ## Публикация и установка
 
